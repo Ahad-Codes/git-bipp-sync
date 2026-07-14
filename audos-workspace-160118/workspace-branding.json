@@ -1,0 +1,147 @@
+{
+  "businessPlan": "## Business Overview\nBipp\n\n**Tagline**: Build publicly. Grow together.\n\n## Customer Profile\nTarget customers identified from business context\n\n### Pain Points\n- Bipp's users want to share what they're building without spending hours figuring out what to post. They're trying to stay consistent, sound authentic, and turn everyday progress into content that attracts attention, trust, and conversation.\n- At a deeper level, they want their audience to feel involved in the journey, not just watch the final result. The problem they're solving is the gap between doing the work and communicating the work in a way that builds momentum.\n\n## Key Problems\n- **Bipp's users want to share what they're building w**: Bipp's users want to share what they're building without spending hours figuring out what to post. They're trying to stay consistent, sound authentic, and turn everyday progress into content that attracts attention, trust, and conversation.\n- **At a deeper level, they want their audience to fee**: At a deeper level, they want their audience to feel involved in the journey, not just watch the final result. The problem they're solving is the gap between doing the work and communicating the work in a way that builds momentum.\n\n## Customer Journey\n## 1. USER GOALS\nBipp's users want to share what they're building without spending hours figuring out what to post. They're trying to stay consistent, sound authentic, and turn everyday progress into content that attracts attention, trust, and conversation.\n\nAt a deeper level, they want their audience to feel involved in the journey, not just watch the final result. The problem they're solving is the gap between doing the work and communicating the work in a way that builds momentum.\n\n## 2. QUALIFYING QUESTIONS\n**What would you like help with most today?**  \n1. Turning a rough idea into a post  \n2. Staying consistent with content  \n3. Getting more engagement from my audience  \n\n**What best describes your current stage?**  \n1. I'm just starting to post in public  \n2. I post sometimes, but not consistently  \n3. I already post often and want better results  \n\n## 3. JOURNEY NARRATIVE\nUsers usually arrive with scattered updates, half-finished thoughts, or the feeling that they \"should\" be posting more often. Bipp should make that first moment easy: the agent asks what they worked on, what happened this week, and what they want people to notice. From there, it turns raw notes into clear posts, thread ideas, captions, or story prompts that sound like the user, not a template.\n\nOnboarding is a guided conversation, not a form. The agent walks users through sharing their story — who they are, what they're building, and why — using a mix of input modalities: typed responses, voice recordings with browser-native transcription, and short prompted check-ins. This makes the first session feel like talking to a collaborator rather than filling out a profile. The context gathered here persists, so future sessions feel continuous rather than starting from scratch.\n\nAs the user keeps sharing, the agent starts noticing patterns: what topics they return to, which post styles get responses, and which parts of their journey resonate most. That lets Bipp suggest better prompts, stronger hooks, and more timely follow-ups. Over time, the agent becomes less of a writing tool and more of a content partner that understands the user's voice, goals, and audience. Each interaction improves the next recommendation, making it easier to keep building in public without losing momentum.\n\n## 4. APP SUPPORT MAP\nUse **creation tools** when the user has ideas, milestones, or updates they want shaped into posts. Use **tracking tools** when they want to measure consistency, engagement, or which story themes are working best. Use **automation tools** when they're ready to schedule, repurpose, or turn one update into multiple formats across platforms. Use **onboarding capture tools** when the user is new or needs to establish their narrative baseline — voice memos, prompted story sessions, and saved context that carries forward into every future session.\n\n## 5. COMMUNITY OPPORTUNITIES\nUsers can benefit from seeing how other entrepreneurs frame wins, failures, and behind-the-scenes progress, especially when they're unsure what \"good\" public updates look like. Bipp can harness shared experiences through swipe files, prompt libraries, and examples of posts that sparked replies, saves, or follows.\n\n## 6. MONETIZATION HOOK\nThe first payment moment should happen right after the user experiences the \"aha\" that Bipp can turn a messy thought into a polished, public-ready post in seconds. Even better, if the agent can take one weekly update and spin it into a full content plan, the value feels immediate and concrete. That's the natural card-on-file moment: \"If it can do this every week, I'll never have to stare at a blank screen again.\"\n\nThe free experience should prove speed and clarity: up to 10 posts per month via Raw-to-Post, basic Consistency Pulse analytics, and basic voice matching. The paid boundary should sit where consistency and scale begin — unlimited posts, scheduling, unlimited repurposing, audience insights, post history, and smarter recommendations based on performance. The ongoing subscription value is not just writing faster; it's building a repeatable public-building system that gets better every week.\n\n## AI Tool Suite\n### Raw-to-Post\n**Purpose**: Turns scattered updates and half-finished thoughts into clear, public-ready posts that sound like the user.\n**User Story**: I want to turn what I worked on this week into a post without staring at a blank screen.\n**In-App Heading**: Your update → a post worth sharing\n**Current Status**: Basic/MVP version live and in active testing. Video upload flow confirmed working; upload progress tracking under active QA. Remotion-based video clip rendering pipeline in active development — video successfully uploads to GCS but render step currently failing due to a missing workspaceId parameter in the API request. A lightweight sandbox/test area has been reintegrated into the flow to allow in-app testing during active development.\n**Key Features**:\n- Multi-format output selector: LinkedIn post (150–250 words, thoughtful professional), Twitter/X thread (4–6 punchy tweets), Caption (short, catchy social caption), Story Prompt — narrative arc + hook ideas\n- Tone toggles: \"Sounds like me,\" \"More vulnerable,\" \"More confident\" to preserve authentic voice\n- Primary inputs: rough idea, weekly update, what happened, what the user wants people to notice\n- Primary outputs: polished post, thread idea, caption, or story prompt\n- Voice capture input: record a voice memo and have it transcribed via browser-native speech recognition, so users can speak their update rather than type it\n- Video upload input: users can upload a video clip as a source for their update; upload pipeline includes real-time progress feedback\n- **Instant video analysis**: as soon as a video is uploaded, the system automatically analyzes the content — detecting speaking style, subject matter, and tone — and recommends the most appropriate post format before the user has to decide (e.g., a founder talking through product progress is flagged as a strong LinkedIn post candidate)\n- Branded video clip generation: recorded clips are rendered with captions and brand color overlays via Remotion (in active development)\n- Post history: saved drafts with copy-to-clipboard and edit actions\n- Supports Twitter/X, LinkedIn, and Threads (more platforms coming based on user feedback)\n\n### Consistency Pulse\n**Purpose**: Helps entrepreneurs track posting consistency, audience engagement, and which story themes are working best.\n**User Story**: I want to know what kinds of updates my audience responds to so I can post more consistently and with better results.\n**Key Features**:\n- Primary inputs: post date, platform (LinkedIn, Twitter/X, Instagram, Other), story theme, engagement level (Low/Medium/High), replies, saves, follows, notes\n- Story theme options: Product Update, Failure/Mistake, Behind the Scenes, Revenue/Metrics, Lesson Learned, Customer Story, Personal Reflection, Hot Take, Process/How-To, Milestone, Question for Audience, Industry Insight\n- Primary outputs: pattern insights, stronger hooks, timely follow-up prompts\n- Stats tracked: day streak, posts logged, high engagement posts\n- Tabs: Log and Insights views\n\n### Story Onboarding\n**Purpose**: Guides new users through sharing their background, what they're building, and why — so the agent can personalize every future session from day one.\n**User Story**: I want Bipp to understand my story so it can help me tell it better, without me having to re-explain myself every time.\n**Key Features**:\n- Agent-led conversational intake: the AI asks questions in sequence rather than presenting a blank form\n- Multiple capture modes: type a response, record a voice memo (transcribed via browser-native speech API), or answer a short prompted question\n- Saved user context: story, goals, current stage, and voice patterns are persisted and referenced in every future session\n- Editable narrative profile: users can review and update their stored story as their journey evolves\n\n## Brand Identity\n- **Tagline**: Build publicly. Grow together.\n- **Primary color**: #ff5a5f (coral/red)\n- **Highlight color**: #00b8ff (bright blue)\n- **Contrast/accent**: #2ee6a6 (mint green)\n- **Heading & body font**: Space Grotesk\n- **Visual style**: Soft gradient backgrounds (warm white → mint → light blue); glass-style dock; clean, modern SaaS aesthetic\n\n---\n*Generated on 5/19/2026*",
+  "workspaceId": "7583d1d5-4a4e-4026-a8bd-e42c0edec891",
+  "configId": 899385,
+  "name": "Bipp",
+  "tagline": "Build publicly. Grow together.",
+  "logoUrl": "https://storage.googleapis.com/audos-images/logo-studio/7583d1d5-4a4e-4026-a8bd-e42c0edec891/4b7cea9b-7022-4477-803c-9af5e96d0943.png",
+  "iconUrl": "https://storage.googleapis.com/audos-images/logo-studio/7583d1d5-4a4e-4026-a8bd-e42c0edec891/4b7cea9b-7022-4477-803c-9af5e96d0943.png",
+  "logoOnDarkUrl": "https://storage.googleapis.com/audos-images/logo-studio/7583d1d5-4a4e-4026-a8bd-e42c0edec891/4b7cea9b-7022-4477-803c-9af5e96d0943.png",
+  "colors": {
+    "primary": "#ff5a5f",
+    "highlight": "#00b8ff",
+    "contrast": "#2ee6a6",
+    "secondary": "#00b8ff",
+    "accent": "#2ee6a6",
+    "primaryScale": {
+      "50": "#fff2f2",
+      "100": "#ffe5e5",
+      "200": "#ffd1d2",
+      "500": "#eb5357",
+      "600": "#ff5a5f",
+      "700": "#d64c50",
+      "900": "#a83b3f"
+    },
+    "highlightScale": {
+      "50": "#ebf9ff",
+      "100": "#d6f4ff",
+      "200": "#b8ebff",
+      "500": "#00a9eb",
+      "600": "#00b8ff",
+      "700": "#009bd6",
+      "900": "#0079a8"
+    },
+    "surfaces": {
+      "page": "#fff7f7",
+      "pageAlt": "#c4f8e6",
+      "gradientFrom": "#fff7f7",
+      "gradientVia": "#c4f8e6",
+      "gradientTo": "#edfaff",
+      "card": "#ffffff",
+      "cardHover": "#eafdf6",
+      "panel": "#d9fbef",
+      "panelStrong": "#cdf9ea",
+      "muted": "#fffcfc",
+      "accentSoft": "#e6f8ff",
+      "border": "#ffdbdc",
+      "borderStrong": "#ffc7c9"
+    },
+    "text": {
+      "primary": "#47191b",
+      "secondary": "#8a3133",
+      "brand": "#47191b",
+      "accent": "#003447",
+      "muted": "#b33f43",
+      "onPrimary": "#111827",
+      "onHighlight": "#111827",
+      "onContrast": "#111827"
+    },
+    "semantic": {
+      "success": "#16a34a",
+      "warning": "#d97706",
+      "danger": "#dc2626"
+    },
+    "shell": {
+      "buttonText": "#111827",
+      "accentButtonText": "#111827",
+      "dockText": "#111827",
+      "icon": "#003447",
+      "shadow": "#ffcecf",
+      "shadowStrong": "#ffb6b9"
+    }
+  },
+  "palette": {
+    "primary": "#ff5a5f",
+    "highlight": "#00b8ff",
+    "contrast": "#2ee6a6",
+    "secondary": "#00b8ff",
+    "accent": "#2ee6a6",
+    "primaryScale": {
+      "50": "#fff2f2",
+      "100": "#ffe5e5",
+      "200": "#ffd1d2",
+      "500": "#eb5357",
+      "600": "#ff5a5f",
+      "700": "#d64c50",
+      "900": "#a83b3f"
+    },
+    "highlightScale": {
+      "50": "#ebf9ff",
+      "100": "#d6f4ff",
+      "200": "#b8ebff",
+      "500": "#00a9eb",
+      "600": "#00b8ff",
+      "700": "#009bd6",
+      "900": "#0079a8"
+    },
+    "surfaces": {
+      "page": "#fff7f7",
+      "pageAlt": "#c4f8e6",
+      "gradientFrom": "#fff7f7",
+      "gradientVia": "#c4f8e6",
+      "gradientTo": "#edfaff",
+      "card": "#ffffff",
+      "cardHover": "#eafdf6",
+      "panel": "#d9fbef",
+      "panelStrong": "#cdf9ea",
+      "muted": "#fffcfc",
+      "accentSoft": "#e6f8ff",
+      "border": "#ffdbdc",
+      "borderStrong": "#ffc7c9"
+    },
+    "text": {
+      "primary": "#47191b",
+      "secondary": "#8a3133",
+      "brand": "#47191b",
+      "accent": "#003447",
+      "muted": "#b33f43",
+      "onPrimary": "#111827",
+      "onHighlight": "#111827",
+      "onContrast": "#111827"
+    },
+    "semantic": {
+      "success": "#16a34a",
+      "warning": "#d97706",
+      "danger": "#dc2626"
+    },
+    "shell": {
+      "buttonText": "#111827",
+      "accentButtonText": "#111827",
+      "dockText": "#111827",
+      "icon": "#003447",
+      "shadow": "#ffcecf",
+      "shadowStrong": "#ffb6b9"
+    }
+  },
+  "typography": {
+    "font": "Space Grotesk",
+    "category": "sans-serif",
+    "weights": [
+      400,
+      700
+    ],
+    "headingFont": "Space Grotesk",
+    "bodyFont": "Space Grotesk"
+  },
+  "heroVideoUrl": "https://storage.googleapis.com/audos-images/generated-videos/models_veo-3.1-generate-preview_operations_a54ny6m2lh8i.mp4"
+}
