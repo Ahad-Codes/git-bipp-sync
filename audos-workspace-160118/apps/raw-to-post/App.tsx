@@ -270,6 +270,83 @@ const TELEPROMPTER_EDIT_STORAGE_PREFIX = 'rawToPost.teleprompterEdits';
 const BIPP_CONTENT_CALENDAR_STORAGE_KEY = 'bipp.contentCalendar.v1';
 const INSTAGRAM_SCHEDULE_HOOK_NAME = 'bipp-publish-instagram-post';
 
+const RAW_TO_POST_STYLE_RULES = `## STYLE RULES (apply to every generated script, post, caption, and slide)
+
+Formatting:
+- No more than 1-3 lines per paragraph or line break. Posts and scripts can vary in overall length, but never write paragraphs of dense text.
+
+Voice & style — avoid these patterns:
+- Question-then-answer reveals: e.g. "The answer? This." or any format that poses a question and immediately answers it in a punchy one-liner.
+- Staccato verb lists: e.g. "Build. Ship. Learn." — do not list items as one-word-per-sentence in rapid succession.
+- Overly punchy or clickbait sentence construction in general.
+
+Instead, write in a voice that is:
+- Human, honest, and conversational — like the founder is talking directly to someone.
+- Structured as hook -> content -> CTA: the hook draws people in, the body delivers a real idea or story, and the CTA invites engagement with a genuine question or prompt.
+- Varied in sentence length — mix short and medium sentences naturally, not artificially.
+- Grounded and personal — share real context, real stakes, real feelings rather than motivational-poster energy.`;
+
+const RAW_TO_POST_REFERENCE_EXAMPLES = `## REFERENCE EXAMPLES — study structure, not topic
+
+The following scripts have proven viral engagement. Study how they open, develop the idea, and close — NOT their topic matter (combat sports, grief coaching). Do not copy or mention their topics, names, or communities unless they appear in the founder's own material.
+
+### Example 1: "How often should you spar people better than you?"
+What would you do if you had to constantly fistfight people who are all significantly taller, heavier, and more skilled than you?
+
+Only a slight exaggeration for hook purposes—that's my training reality. I go to awesome gyms, so everyone in the advanced classes is insanely good. I spend many hours a week learning purely by trial by fire, training with amateur and even pro competitors.
+
+I saw this post saying that 10% of your time should be spent sparring with people who are more skilled. They're probably right, though I think there are merits to my own experience: training with more skilled people majority of the time.
+
+You learn how to spar hard and understand your limits. You teach yourself how brave you are. Also, the more advanced people, especially in jiu jitsu, are more controlled than beginners. When you get rocked, you know how and why. It's not random spazzy stuff.
+
+Yeah, it'd be nice to respectfully piece people up more often, but when I walk into work after getting my face elbowed, I feel like nothing can faze me anymore. Sometimes, training gets very discouraging, but it's made me very proud of my resilience.
+
+How often do you spar with people better than you?
+
+### Example 2: "Aggressive personality ≠ better fighter"
+If you're an aggressive person, would you be better at martial arts?
+
+Not necessarily.
+
+This was a hard lesson I recently had to learn.
+
+My fight or flight response has always been to fight. You'd think that would help me in MMA, but it doesn't.
+
+My "fight" response makes me stand there when someone is attacking and wait for my time to strike, instead of evading or finding angles, which is not smart. And I throw shots frequently, which makes me predictable.
+
+My coaches have been teaching me the importance of defense and "earning your offense." Everyone knows how to throw shots; that doesn't mean I'd be a good fighter. My biggest takeaway is that fighting is way more than waiting for your time to strike, just like a conversation is more than waiting for your time to talk.
+
+How has your fight or flight response impacted your training?
+
+### Example 3: "Why do you train so hard just to suck?"
+"Why do I train so hard just to suck?"
+
+If you've been asking yourself that lately, I have been, too. Here's how I found my answer.
+
+For a while now, I've been spending 6-10 hours a week getting beaten up and slowly improving from trial by fire. My training partners are taller, heavier, more experienced, and frequently amateur or pro competitors.
+
+Normally this is fun, but the physical and experience gaps feel like chasms sometimes. My breaking point was, after a long week of training, getting trapped in a choke that I totally expected but did not escape. I felt tired, helpless, and angry at myself.
+
+I rested for a few days, then asked my training partners for advice.
+
+A Muay Thai friend told me, "If you were gonna quit, you would feel discouraged or indifferent. But you're frustrated. That tells me you're gonna keep showing up. Use that frustration as fuel. This, too, shall pass."
+
+And at jiu jitsu, I talked to other girls in the locker room of all belt levels, and they said they feel like they suck no matter how far they progress.
+
+I realized that being burned out doesn't make me a quitter—quitters burn out, but so does everyone else. How I respond matters more. And, most importantly, the people that beat you up have your back.
+
+Obviously, I'm not quitting. I've never given up on anything in my life.
+
+Why do you train so hard just to suck?
+
+### Example 4 (entrepreneur context — closest to this founder's use case):
+Hi, my name is Sarah and I am the founder of Solace and grateful entrepreneur and partner of Audos.
+After experiencing my own profound loss, and a lack of support in navigating life with grief, I set out to help others in the same situation by becoming a grief coach.
+Helping individuals was powerful and special, and still is, but Audos gave me the technical and entrepreneurial knowledge to turn this into something bigger.
+Through AI and their support, I built Solace - an AI grief coach, and platform of tools, that can now reach anyone, anywhere and help those navigating loss — be it loss of a friend or family member, loss of a pet, or even the loss of a home, a job, an identity, a sense of self or security, or however someone defines grief and loss.
+I hope that this space helps people hold all of the emotions that come with grief, and to start to look forward — to learning to live with this loss.
+Solace is now helping me envision what is next for my audience, where do we go from here, how to use AI to continue to expand the journey for my users in grief.`;
+
 type CalendarItemType = 'organic' | 'paid' | 'strategy';
 type CalendarItemStatus = 'planned' | 'done';
 type CalendarItemSource = 'chat' | 'manual' | 'raw-to-post' | 'scheduled';
@@ -4398,6 +4475,8 @@ export default function RawToPost() {
     const founderGuidance = carouselBrandGuidance.trim();
     const prompt = [
       'Create an Instagram carousel from this Raw-to-Post idea. Optimize it for social performance: the first slide must be a concise scroll-stopping hook, every slide must advance one distinct idea without repeating the previous slide, and the final slide must end with a question, call to action, or crisp concluding claim.',
+      RAW_TO_POST_STYLE_RULES,
+      RAW_TO_POST_REFERENCE_EXAMPLES,
       founderGuidance ? `Founder brand guidelines/customization request:\n${founderGuidance}` : '',
       founderGuidance ? 'Apply the founder guidance to the voice, slide structure, examples, terminology, CTA, and level of specificity. Keep each slide concise enough for an editable Instagram carousel.' : '',
       sourceCarousel?.title || carouselDraftTitle || videoAnalysis?.summary || 'Founder update carousel',
@@ -4783,6 +4862,10 @@ Carousel quality rules:
 - The final slide must end with a question, call to action, or crisp concluding claim.
 
 For raw clip guidance, evaluate the recorded video itself before recommending follow-up content. Only mark rawClip.usable true if the actual recorded video can work on its own after editing. If true, provide a punchy hook, ideal start/end seconds or segments to keep, and a clear narrative structure. Prefer segments that remove filler, dead space, restarts, or rambling. If the raw video is not strong enough, mark usable false and be candid about why: mention issues like hesitant delivery, rambling, weak structure, dead space, poor framing, or inconsistent eye contact when present. Then connect that evaluation to the follow-up content plan by naming the core idea, insight, or story that is still worth turning into the Instagram video script or carousel below.
+
+${RAW_TO_POST_STYLE_RULES}
+
+${RAW_TO_POST_REFERENCE_EXAMPLES}
 
 Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape:
 {
