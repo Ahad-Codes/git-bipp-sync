@@ -28,6 +28,14 @@
       "icon": "Globe",
       "component": "apps/app_ed3cab80.tsx",
       "public": true
+    },
+    {
+      "id": "1afe5631-2c0a-4d8e-a928-a5efb9517bc2",
+      "name": "Bipp Landing Page (Alias)",
+      "description": "Registration alias for platform app 1afe5631-2c0a-4d8e-a928-a5efb9517bc2 so the publish pipeline can resolve its space entry file. No component file named for this ID exists in the workspace; it points at the same standalone, self-mounting landing page component as Bipp Landing Page.",
+      "icon": "Globe",
+      "component": "apps/app_ed3cab80.tsx",
+      "public": true
     }
   ],
   "agent": {
