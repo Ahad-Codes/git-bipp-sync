@@ -400,6 +400,14 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+function normalizeRecordingDateKey(value: unknown, fallback = ''): string {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return formatDate(value);
+  }
+  const raw = String(value || '').trim();
+  return raw.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] || fallback;
+}
+
 function formatDateTimeLocal(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -461,6 +469,15 @@ function getVideoUploadFileName(blob: Blob, fallbackName = 'video'): string {
   const sourceName = typeof File !== 'undefined' && blob instanceof File ? blob.name : '';
   const baseName = sanitizeFileBaseName(sourceName || fallbackName) || 'video';
   return `${baseName}.${getVideoExtension(blob.type, sourceName)}`;
+}
+
+function downloadBlobToDevice(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function clampNumber(value: number, min: number, max: number): number {
@@ -1685,19 +1702,19 @@ function getLocalVideoRecordings(date: string): Recording[] {
         video_url: typeof row.video_url === 'string' ? row.video_url : '',
         thumbnail_url: typeof row.thumbnail_url === 'string' ? row.thumbnail_url : undefined,
         duration_seconds: Math.max(1, Number(row.duration_seconds) || 1),
-        recording_date: String(row.recording_date || date),
+        recording_date: normalizeRecordingDateKey(row.recording_date, date),
         status: row.status === 'pending' || row.status === 'analyzing' || row.status === 'error' ? row.status : 'ready',
         title: typeof row.title === 'string' ? row.title : 'Saved video',
         created_at: typeof row.created_at === 'string' ? row.created_at : new Date().toISOString(),
       }))
-      .filter((row: Recording) => row.recording_date === date && Boolean(row.video_url));
+      .filter((row: Recording) => normalizeRecordingDateKey(row.recording_date) === date && Boolean(row.video_url));
   } catch {
     return [];
   }
 }
 
 function saveLocalVideoRecording(recording: Recording): Recording {
-  const date = recording.recording_date;
+  const date = normalizeRecordingDateKey(recording.recording_date);
   const existingRows = getLocalVideoRecordings(date);
   const normalizedRecording: Recording = {
     ...recording,
@@ -1728,16 +1745,17 @@ function mergeRecordingsForDate(dbRecordings: Recording[], localRecordings: Reco
   const replacementCutoff = getReplacementCutoff(date);
   [...localRecordings, ...dbRecordings]
     .filter(recording => {
-      if (recording.recording_date !== date || !recording.video_url) return false;
+      if (normalizeRecordingDateKey(recording.recording_date) !== date || !recording.video_url) return false;
       if (!replacementCutoff) return true;
       const createdAt = Date.parse(recording.created_at || '');
       return Number.isFinite(createdAt) && createdAt > replacementCutoff;
     })
     .forEach(recording => {
-      const key = recording.video_url || String(recording.id);
+      const normalizedRecording = { ...recording, recording_date: date };
+      const key = normalizedRecording.video_url || String(normalizedRecording.id);
       const existing = merged.get(key);
-      if (!existing || (recording.id > 0 && existing.id < 0)) {
-        merged.set(key, recording);
+      if (!existing || (normalizedRecording.id > 0 && existing.id < 0)) {
+        merged.set(key, normalizedRecording);
       }
     });
 
@@ -2045,7 +2063,9 @@ export default function RawToPost() {
   const [isSchedulingInstagram, setIsSchedulingInstagram] = useState(false);
   const [instagramScheduleStatus, setInstagramScheduleStatus] = useState('');
   const [openingSavedRecordingKey, setOpeningSavedRecordingKey] = useState<string | null>(null);
+  const [savedRecordingDownloadKey, setSavedRecordingDownloadKey] = useState<string | null>(null);
   const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [recordingsLoading, setRecordingsLoading] = useState(false);
   const [recordingsRefreshVersion, setRecordingsRefreshVersion] = useState(0);
   const [localRecordingsVersion, setLocalRecordingsVersion] = useState(0);
   const [showReplaceProgressDialog, setShowReplaceProgressDialog] = useState(false);
@@ -2069,9 +2089,12 @@ export default function RawToPost() {
 
     if (!workspaceDbReady) {
       setRecordings([]);
+      setRecordingsLoading(false);
       return;
     }
 
+    setRecordings([]);
+    setRecordingsLoading(true);
     getWorkspaceRows<Recording>(
       'video_recordings',
       [{ column: 'recording_date', operator: 'eq', value: dateFilter }],
@@ -2083,6 +2106,9 @@ export default function RawToPost() {
       .catch(error => {
         console.warn('Failed to load saved recordings:', error);
         if (!cancelled) setRecordings([]);
+      })
+      .finally(() => {
+        if (!cancelled) setRecordingsLoading(false);
       });
 
     return () => {
@@ -2584,6 +2610,7 @@ export default function RawToPost() {
         setVideoProcessingStage('idle');
         setVideoProcessingName('');
         setAnalysisError('');
+        restoreLocalDraftsForDate(dateFilter);
         return;
       }
 
@@ -4729,12 +4756,7 @@ export default function RawToPost() {
   const downloadRawRecordedVideo = useCallback(() => {
     if (!videoBlob) return;
     const fileName = getVideoUploadFileName(videoBlob, `bipp-recording-${activeMediaDateKey || dateFilter}`);
-    const url = URL.createObjectURL(videoBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadBlobToDevice(videoBlob, fileName);
   }, [videoBlob, activeMediaDateKey, dateFilter]);
 
 	  const loadVideoFile = (file: File) => {
@@ -5091,6 +5113,86 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
       [{ column: 'recording_id', operator: 'eq', value: recordingId }],
       { column: 'created_at', direction: 'desc' }
     );
+  };
+
+  const downloadSavedRecordingVideo = async (recording: Recording) => {
+    if (!recording.video_url) return;
+    const actionKey = `video:${recording.id}:${recording.video_url}`;
+    setSavedRecordingDownloadKey(actionKey);
+    setMetaError('');
+    try {
+      const response = await fetch(recording.video_url);
+      if (!response.ok) throw new Error('Could not download this saved recording.');
+      const blob = await response.blob();
+      if (!blob.size) throw new Error('This saved recording is empty.');
+      const sourceName = recording.video_url.split('?')[0].split('/').pop() || '';
+      const baseName = sanitizeFileBaseName(recording.title || `bipp-recording-${dateFilter}`) || `bipp-recording-${dateFilter}`;
+      downloadBlobToDevice(blob, `${baseName}.${getVideoExtension(blob.type, sourceName)}`);
+    } catch (err: any) {
+      setMetaError(err.message || 'Could not download this saved recording.');
+    } finally {
+      setSavedRecordingDownloadKey(current => current === actionKey ? null : current);
+    }
+  };
+
+  const downloadSavedRecordingContent = async (recording: Recording) => {
+    const actionKey = `content:${recording.id}:${recording.video_url || ''}`;
+    setSavedRecordingDownloadKey(actionKey);
+    setMetaError('');
+    try {
+      const recordingDate = normalizeRecordingDateKey(recording.recording_date, dateFilter);
+      const recordingId = recording.id > 0 ? recording.id : null;
+      let posts = recordingId === currentRecordingId ? savedPosts : [];
+      if (recordingId) {
+        try {
+          const storedPosts = await getPostsForRecording(recordingId);
+          if (storedPosts.length) posts = storedPosts;
+        } catch (error) {
+          console.warn('Could not load stored posts for download; using local drafts instead.', error);
+        }
+      }
+      const candidates = [
+        ...posts.map(post => ({
+          label: post.post_format === 'linkedin'
+            ? 'LinkedIn post'
+            : post.post_format === 'instagram-video'
+              ? 'Instagram video script'
+              : post.post_format === 'instagram-carousel'
+                ? 'Instagram carousel'
+                : 'Bipp content plan',
+          content: post.content,
+        })),
+        { label: 'Bipp content plan', content: window.localStorage.getItem(getContentPlanStorageKey(recordingId, recordingDate)) || '' },
+        { label: 'Bipp content plan', content: window.localStorage.getItem(getContentPlanStorageKey(null, recordingDate)) || '' },
+        { label: 'LinkedIn post', content: window.localStorage.getItem(getLinkedInDraftStorageKey(recordingId, recordingDate)) || '' },
+        { label: 'LinkedIn post', content: window.localStorage.getItem(getLinkedInDraftStorageKey(null, recordingDate)) || '' },
+        { label: 'Instagram video script', content: window.localStorage.getItem(getInstagramScriptDraftStorageKey(recordingId, recordingDate)) || '' },
+        { label: 'Instagram video script', content: window.localStorage.getItem(getInstagramScriptDraftStorageKey(null, recordingDate)) || '' },
+        { label: 'Instagram carousel', content: window.localStorage.getItem(getInstagramCarouselDraftStorageKey(recordingId, recordingDate)) || '' },
+        { label: 'Instagram carousel', content: window.localStorage.getItem(getInstagramCarouselDraftStorageKey(null, recordingDate)) || '' },
+      ];
+      const seen = new Set<string>();
+      const sections = candidates.filter(item => {
+        const content = item.content.trim();
+        if (!content || seen.has(content)) return false;
+        seen.add(content);
+        return true;
+      });
+      if (!sections.length) {
+        throw new Error('No Bipp-generated script or post is saved for this recording yet.');
+      }
+      const documentText = [
+        `Bipp content for ${formatDisplayDate(new Date(`${recordingDate}T12:00:00`))}`,
+        recording.title ? `Recording: ${recording.title}` : '',
+        ...sections.map(section => `\n${section.label}\n${'='.repeat(section.label.length)}\n${section.content.trim()}`),
+      ].filter(Boolean).join('\n');
+      const baseName = sanitizeFileBaseName(recording.title || 'bipp-content') || 'bipp-content';
+      downloadBlobToDevice(new Blob([documentText], { type: 'text/plain;charset=utf-8' }), `${baseName}-${recordingDate}-content.txt`);
+    } catch (err: any) {
+      setMetaError(err.message || 'Could not download the generated content for this recording.');
+    } finally {
+      setSavedRecordingDownloadKey(current => current === actionKey ? null : current);
+    }
   };
 
   const saveVideoPostDraftRow = async (
@@ -5528,16 +5630,33 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
     setSelectedDate(new Date(date));
   };
 
+  const beginCaptureForSelectedDate = () => {
+    setRecordingMode('camera');
+    setCaptureModeDateKey(dateFilter);
+    setCameraError('');
+    setCameraReady(false);
+    window.requestAnimationFrame(() => {
+      void initCamera('camera');
+    });
+  };
+
   const isToday = (date: Date) => formatDate(date) === formatDate(today);
   const isSelected = (date: Date) => formatDate(date) === formatDate(selectedDate);
   const selectedFormat = FORMAT_OPTIONS.find(f => f.value === format)!;
   const isReplacingProgressForSelectedDate = replaceProgressDateKey === dateFilter;
   const hasExistingRecording = recordingsForSelectedDate.length > 0 && !isReplacingProgressForSelectedDate;
+  const isPastSelectedDate = dateFilter < formatDate(today);
   const hasScriptedTeleprompterRecordingForSelectedDate = recordingsForSelectedDate.some(isGeneratedScriptRecording);
   const scriptActionLabel = hasScriptedTeleprompterRecordingForSelectedDate ? 'Retake video' : 'Use script';
   const hasActiveMediaDate = activeMediaDateKey === dateFilter || activeMediaDateKeyRef.current === dateFilter;
   const isCaptureModeForSelectedDate = captureModeDateKey === dateFilter;
   const showPlaybackForSelectedDate = showingPlayback && hasActiveMediaDate && Boolean(videoUrl);
+  const showPastDayEmptyState = isPastSelectedDate
+    && !recordingsLoading
+    && !hasExistingRecording
+    && !showPlaybackForSelectedDate
+    && !isRecording
+    && !isCaptureModeForSelectedDate;
   const activeVideoProcessingStage: VideoProcessingStage = videoProcessingStage !== 'idle'
     ? videoProcessingStage
     : isAnalyzing && !videoAnalysis
@@ -5651,7 +5770,7 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
     || isRenderingTeleprompterEdit;
 
   return (
-    <div className="min-h-full flex flex-col w-full" style={{ background: '#fafafa' }}>
+    <div className="h-full min-h-0 flex flex-col w-full" style={{ background: '#fafafa' }}>
       {/* Hidden canvas for PiP compositing */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
@@ -5722,7 +5841,7 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {/* Week Calendar */}
         <div className="px-5 py-4 border-b" style={{ borderColor: '#e5e5e5', background: '#fff' }}>
           <div className="flex items-center justify-between mb-3">
@@ -5870,8 +5989,36 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
           </div>
         )}
 
-        {/* Video Section - Only show if no existing recording or user wants to record new */}
-        {!hasExistingRecording || showPlaybackForSelectedDate || isRecording || isCaptureModeForSelectedDate ? (
+        {/* Video Section - saved sessions, a clear past-day empty state, or capture mode */}
+        {recordingsLoading && !hasExistingRecording ? (
+          <div className="p-5">
+            <div className="flex items-center justify-center gap-2 rounded-2xl p-8 text-sm" style={{ background: '#fff', border: '1px solid #e5e5e5', color: '#666' }}>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading recordings for {formatDisplayDate(selectedDate)}...
+            </div>
+          </div>
+        ) : showPastDayEmptyState ? (
+          <div key={`empty-${dateFilter}`} className="p-5">
+            <div className="rounded-2xl p-8 text-center" style={{ background: '#fff', border: '1px solid #e5e5e5' }}>
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: '#f3f4f6', color: '#6b7280' }}>
+                <Calendar className="h-6 w-6" />
+              </div>
+              <h3 className="font-semibold" style={{ color: '#111' }}>No recording for this day</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed" style={{ color: '#666' }}>
+                Nothing was recorded on {formatDisplayDate(selectedDate)}. You can still add a video and run it through the same Record → Analyze → Plan flow.
+              </p>
+              <button
+                type="button"
+                onClick={beginCaptureForSelectedDate}
+                className="mx-auto mt-4 flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white"
+                style={{ background: '#3b82f6' }}
+              >
+                <Camera className="h-4 w-4" />
+                Record or upload for this day
+              </button>
+            </div>
+          </div>
+        ) : !hasExistingRecording || showPlaybackForSelectedDate || isRecording || isCaptureModeForSelectedDate ? (
           <div key={`capture-${dateFilter}`} className="p-5">
             <input
               ref={fileInputRef}
@@ -6199,6 +6346,28 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
                               </span>
                             </div>
                           </button>
+                          <div className="grid grid-cols-2 gap-2 p-2">
+                            <button
+                              type="button"
+                              onClick={() => downloadSavedRecordingVideo(recording)}
+                              disabled={Boolean(savedRecordingDownloadKey)}
+                              className="flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold disabled:opacity-60"
+                              style={{ background: '#eff6ff', color: '#2563eb' }}
+                            >
+                              {savedRecordingDownloadKey === `video:${recordingActionKey}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                              Video
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => downloadSavedRecordingContent(recording)}
+                              disabled={Boolean(savedRecordingDownloadKey)}
+                              className="flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold disabled:opacity-60"
+                              style={{ background: '#f0fdf4', color: '#166534' }}
+                            >
+                              {savedRecordingDownloadKey === `content:${recordingActionKey}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                              Content
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
