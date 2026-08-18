@@ -2068,6 +2068,7 @@ export default function RawToPost() {
   const [recordingsLoading, setRecordingsLoading] = useState(false);
   const [recordingsRefreshVersion, setRecordingsRefreshVersion] = useState(0);
   const [localRecordingsVersion, setLocalRecordingsVersion] = useState(0);
+  const [weekRecordingDates, setWeekRecordingDates] = useState<Set<string>>(new Set());
   const [showReplaceProgressDialog, setShowReplaceProgressDialog] = useState(false);
   const [isReplacingProgress, setIsReplacingProgress] = useState(false);
   const [replaceProgressDateKey, setReplaceProgressDateKey] = useState<string | null>(null);
@@ -2341,6 +2342,44 @@ export default function RawToPost() {
   const referenceDate = new Date(today);
   referenceDate.setDate(today.getDate() + weekOffset * 7);
   const weekDates = getWeekDates(referenceDate);
+  const weekDateKeysSignature = weekDates.map(formatDate).join(',');
+
+  // Track which dates in the visible week already have a recording (blue dot on the day pills)
+  useEffect(() => {
+    let cancelled = false;
+    const dateKeys = weekDateKeysSignature.split(',');
+
+    const computeDatesWithRecordings = (dbRows: Recording[]): Set<string> => {
+      const next = new Set<string>();
+      for (const dateKey of dateKeys) {
+        const dbRowsForDate = dbRows.filter(row => normalizeRecordingDateKey(row.recording_date) === dateKey);
+        if (mergeRecordingsForDate(dbRowsForDate, getLocalVideoRecordings(dateKey), dateKey).length > 0) {
+          next.add(dateKey);
+        }
+      }
+      return next;
+    };
+
+    if (!workspaceDbReady) {
+      setWeekRecordingDates(computeDatesWithRecordings([]));
+      return;
+    }
+
+    Promise.all(
+      dateKeys.map(dateKey =>
+        getWorkspaceRows<Recording>(
+          'video_recordings',
+          [{ column: 'recording_date', operator: 'eq', value: dateKey }]
+        ).catch(() => [] as Recording[])
+      )
+    ).then(rowsByDate => {
+      if (!cancelled) setWeekRecordingDates(computeDatesWithRecordings(rowsByDate.flat()));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [weekDateKeysSignature, workspaceDbReady, recordingsRefreshVersion, localRecordingsVersion]);
 
   // Clean up media resources on unmount. Media permissions are requested only after user action.
   useEffect(() => {
@@ -5881,6 +5920,7 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
             {weekDates.map((date, i) => {
               const selected = isSelected(date);
               const todayDate = isToday(date);
+              const hasRecordingDot = weekRecordingDates.has(formatDate(date));
               return (
                 <button
                   key={i}
@@ -5893,6 +5933,11 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
                 >
                   <span className="text-xs font-medium">{DAYS_OF_WEEK[i]}</span>
                   <span className="text-lg font-bold">{date.getDate()}</span>
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 h-1.5 w-1.5 rounded-full pointer-events-none"
+                    style={{ background: hasRecordingDot ? (selected ? '#fff' : '#3b82f6') : 'transparent' }}
+                  />
                 </button>
               );
             })}
