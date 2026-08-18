@@ -4726,6 +4726,17 @@ export default function RawToPost() {
     }
   }, [isRecording]);
 
+  const downloadRawRecordedVideo = useCallback(() => {
+    if (!videoBlob) return;
+    const fileName = getVideoUploadFileName(videoBlob, `bipp-recording-${activeMediaDateKey || dateFilter}`);
+    const url = URL.createObjectURL(videoBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, [videoBlob, activeMediaDateKey, dateFilter]);
+
 	  const loadVideoFile = (file: File) => {
 	    if (!isVideoFile(file)) {
 	      setCameraError('Please choose a video file.');
@@ -5904,6 +5915,20 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
                     objectFit: 'cover',
 	                  }}
 	                />
+	              )}
+
+	              {/* Download raw recorded video — available once analysis wraps, independent of content suggestions */}
+	              {showPlaybackForSelectedDate && videoBlob && activeVideoProcessingStage === 'idle' && (
+	                <button
+	                  type="button"
+	                  onClick={downloadRawRecordedVideo}
+	                  title="Download video"
+	                  aria-label="Download video"
+	                  className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition-opacity hover:opacity-100"
+	                  style={{ background: 'rgba(15,23,42,0.72)', color: '#fff', backdropFilter: 'blur(8px)', opacity: 0.85 }}
+	                >
+	                  <Download className="h-4 w-4" />
+	                </button>
 	              )}
 
 	              {showVideoProcessingStatus && (
