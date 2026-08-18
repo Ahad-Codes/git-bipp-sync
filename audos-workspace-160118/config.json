@@ -20,6 +20,14 @@
       "icon": "CalendarDays",
       "dataFile": "data/content-calendar.json",
       "component": "apps/content-calendar/App.tsx"
+    },
+    {
+      "id": "bddebcf5-744b-491a-93bd-b61f0428d232",
+      "name": "Bipp Landing Page",
+      "description": "Public marketing landing page for Bipp (standalone, self-mounting). Registered here so the publish pipeline can resolve this app's entry file.",
+      "icon": "Globe",
+      "component": "apps/app_ed3cab80.tsx",
+      "public": true
     }
   ],
   "agent": {
