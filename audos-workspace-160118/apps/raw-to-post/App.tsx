@@ -5936,7 +5936,7 @@ Respond with ONLY a JSON object (no markdown, no preamble) in exactly this shape
                   <span
                     aria-hidden="true"
                     className="mt-0.5 h-1.5 w-1.5 rounded-full pointer-events-none"
-                    style={{ background: hasRecordingDot ? (selected ? '#fff' : '#3b82f6') : 'transparent' }}
+                    style={{ background: hasRecordingDot ? '#ef4444' : 'transparent' }}
                   />
                 </button>
               );
